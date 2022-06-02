@@ -1,26 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:untitled/secondScreen.dart';
-import 'package:http/http.dart' as http;
 
-main() => runApp(App());
+import 'main.dart';
 
-class App extends StatefulWidget {
+class SecondScrren extends StatefulWidget {
   @override
-  State<App> createState() => _AppState();
+  State<SecondScrren> createState() => _SecondScrrenState();
 }
 
-class User {
-  late int id;
-  late String name;
-  late bool isAccepted;
-
-  User(this.id, this.name, this.isAccepted);
-}
-
-class _AppState extends State<App> {
+class _SecondScrrenState extends State<SecondScrren> {
   List<User> items = [];
-
 
   @override
   void initState() {
@@ -34,10 +23,14 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      routes: <String, WidgetBuilder>{
+        '/settings': (BuildContext context) => SecondScrren(),
+      },
       debugShowCheckedModeBanner: false,
       home: Scaffold(
+
         appBar: AppBar(
-          title: Text("Hello Temur"),
+          title: Text("Second Screen"),
         ),
         body: ListView.builder(
             itemCount: items.length,
@@ -95,11 +88,10 @@ class _AppState extends State<App> {
             }),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            print("Clicked");
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => SecondScrren()),
-            );
+            setState(() {
+              items.insert(
+                  0, User(items.length + 1, "Temur ${items.length + 1}", true));
+            });
           },
         ),
       ),
