@@ -1,29 +1,39 @@
-import 'dart:ffi';
-import 'dart:math';
-
+import 'package:blur/blur.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:untitled/secondScreen.dart';
-import 'package:http/http.dart' as http;
+import 'package:untitled/DetailScreen.dart';
+import 'package:untitled/FirstScreen.dart';
+import 'package:untitled/SecondSceen.dart';
+import 'package:untitled/ThirdScreen.dart';
+import 'package:untitled/routes.dart';
 
-main() => runApp(App());
+import 'DragableScreen.dart';
 
-class App extends StatefulWidget {
+main() => runApp(MainWidget());
+
+class MainWidget extends StatefulWidget {
+  const MainWidget({Key? key}) : super(key: key);
+
   @override
-  State<App> createState() => _AppState();
+  State<MainWidget> createState() => Main();
 }
 
 class User {
   late int id;
   late String name;
-  late bool isAccepted;
+  late bool isSelected;
 
-  User(this.id, this.name, this.isAccepted);
+  User(this.id, this.name, this.isSelected);
 }
 
-class _AppState extends State<App> {
+class Main extends State<MainWidget> {
   List<User> items = [];
+
+  var currentItem = 0;
+
+  final screens = [FirstScreen(), SecondScreen(), ThirdScreen()];
 
   @override
   void initState() {
@@ -38,6 +48,10 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
+        routes: {
+          // DETAIL_SCREEN_ROUTE: (context) => DetailScreen(),
+          DRAGABLE_SCREEN_ROUTE: (context) => DragableScreen(),
+        },
         home: Scaffold(
             appBar: AppBar(
               systemOverlayStyle: const SystemUiOverlayStyle(
@@ -56,75 +70,13 @@ class _AppState extends State<App> {
                 style: TextStyle(color: Colors.black),
               ),
             ),
-            body: ListView.builder(
-                itemCount: items.length,
-                physics: const BouncingScrollPhysics(
-                    parent: AlwaysScrollableScrollPhysics()),
-                padding: const EdgeInsets.only(top: 32),
-                itemBuilder: (BuildContext context, int index) {
-                  return Dismissible(
-                    direction: DismissDirection.startToEnd,
-                    key: UniqueKey(),
-                    child: SizedBox(
-                        height: 100,
-                        child: Column(children: [
-                          Flexible(
-                              child: FractionallySizedBox(
-                                  heightFactor: 0.8,
-                                  widthFactor: 0.9,
-                                  child: Container(
-                                    decoration: const BoxDecoration(
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black12,
-                                            blurRadius: 4.0,
-                                            spreadRadius: 0,
-                                            offset: Offset(2.0, 0.0),
-                                          )
-                                        ],
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(24))),
-                                    child: Container(
-                                        alignment: Alignment.centerLeft,
-                                        padding: const EdgeInsets.all(12),
-                                        child: Row(children: [
-                                          ClipRRect(
-                                            borderRadius:
-                                            BorderRadius.circular(18),
-                                            child: Image.network(
-                                                'https://picsum.photos/250?image=9'),
-                                          ),
-                                          const Padding(
-                                              padding: EdgeInsets.all(12)),
-                                          Text(
-                                            items[index].name,
-                                            style: const TextStyle(
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 18),
-                                          )
-                                        ])),
-                                  ))),
-                        ])),
-                    onDismissed: (direction) {
-                      setState(() {
-                        items.removeAt(index);
-                      });
-
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text("Sending $direction"),
-                        dismissDirection: DismissDirection.startToEnd,
-                      ));
-                    },
-                  );
-                }),
+            body: screens[currentItem],
             floatingActionButton: FloatingActionButton(
               child: const Icon(Icons.add),
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SecondScrren()),
+                  MaterialPageRoute(builder: (context) => FirstScreen()),
                 );
               },
             ),
@@ -150,7 +102,7 @@ class _AppState extends State<App> {
                       BottomNavigationBarItem(
                           icon: Icon(Icons.favorite), label: "Favorites"),
                       BottomNavigationBarItem(
-                          icon: Icon(Icons.person_off), label: "Profile"),
+                          icon: Icon(Icons.person), label: "Profile"),
                     ],
                     onTap: (index) {
                       setState(() {
@@ -162,5 +114,40 @@ class _AppState extends State<App> {
             )));
   }
 
-  int currentItem = 0;
+  Widget makeBlurImage() {
+    return Blur(
+        blur: 0.9,
+        borderRadius: BorderRadius.circular(18),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: Image.network('https://picsum.photos/250?image=9'),
+        ));
+  }
+
+  Widget toggleVisibilityState(int index) {
+    if (items[index].isSelected) {
+      return GestureDetector(
+          onTap: () {
+            setState(() {
+              items[index].isSelected = !items[index].isSelected;
+            });
+          }, // Image tapped
+          child: const Icon(Icons.remove_red_eye));
+    } else {
+      return GestureDetector(
+          onTap: () {
+            setState(() {
+              items[index].isSelected = !items[index].isSelected;
+            });
+          }, // Image tapped
+          child: const Icon(Icons.block));
+    }
+  }
+
+  Widget makeImage() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(18),
+      child: Image.network('https://picsum.photos/250?image=9'),
+    );
+  }
 }
